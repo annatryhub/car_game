@@ -6,6 +6,7 @@ from pgzero.actor import Actor
 
 from pgzero.keyboard import keyboard
 
+# посилання на репозиторій для зручності https://github.com/annatryhub/car_game.git
 WIDTH = 800
 HEIGHT = 600
 
@@ -17,8 +18,8 @@ class Car:
         self.crashed = False # машинка ще не розбилась і гра триває
         self.finished = False
 
-    def check_crash(self, obs): # функція перевіряє, чи машинка знаходиться в полі для гри
-        if self.actor.left < 0 or self.actor.right > WIDTH or self.actor.colliderect(obs.actor): # поки актор.машинка не зʼїхала за межі вправо чи вліво і поки не вдарилась в перешкоду
+    def check_crash(self, obstacle): # функція перевіряє, чи машинка знаходиться в полі для гри
+        if self.actor.left < 0 or self.actor.right > WIDTH or self.actor.colliderect(obstacle.actor): # поки актор.машинка не зʼїхала за межі вправо чи вліво і поки не вдарилась в перешкоду
             self.crashed = True
 
     def check_finish(self, finish): # функція перевіряє, чи машинка на фініші
@@ -67,7 +68,7 @@ class Car:
 
 class Obstacle:
     def __init__(self):
-        self.actor = Actor('obs.png', center=(random.randrange(0, WIDTH), -150))
+        self.actor = Actor('obstacle.png', center=(random.randrange(0, WIDTH), -150))
         self.count = 0 # використовується для підрахунку успішно подоланих перешкод
 
     def update(self, speed):
@@ -119,46 +120,46 @@ class GameMode:
     def draw_scores(self):
         screen.draw.text("Scores: " + str(self.scores), (20, 25), color=(0, 0, 0))
 
-    def pause(self, car, obs, finish):
+    def pause(self, car, obstacle, finish):
         self.paused = True
         if keyboard.r: # при натисканні на R гра починається спочатку
             car.reset()
-            obs.reset()
+            obstacle.reset()
             finish.reset()
             self.paused = False
         if keyboard.z: # при натисканні на Z фініш переноситься на координату -10000 і швидкість машини є 10
             car.reset(10)
-            obs.reset()
+            obstacle.reset()
             finish.reset(-10000)
             self.paused = False
         if keyboard.x: # при натисканні на X фініш стає вдвічі довшим і переноситься на -20000 і мінімальна швидкість 20
             car.reset(20)
-            obs.reset()
+            obstacle.reset()
             finish.reset(-20000)
             self.paused = False
         if keyboard.c: # С викликає найважчий рівень гри. Мінімальна швидкість 35 і гра стає ще довшою
             car.reset(35)
-            obs.reset()
+            obstacle.reset()
             finish.reset(-30000)
             self.paused = False
 
 # викликаємо класи
 car = Car()
-obs = Obstacle()
+obstacle = Obstacle()
 finish = Finish()
 gamemode = GameMode()
 
 
 def update():
     if car.crashed or car.finished:
-        gamemode.pause(car, obs, finish)
+        gamemode.pause(car, obstacle, finish)
     if not gamemode.paused:
-        obs.update(car.speed)
+        obstacle.update(car.speed)
         finish.update(car.speed)
         car.update()
-        car.check_crash(obs)
+        car.check_crash(obstacle)
         car.check_finish(finish)
-        gamemode.update(obs.count)
+        gamemode.update(obstacle.count)
 
 
 def draw():
@@ -166,7 +167,7 @@ def draw():
     if not gamemode.paused:
         gamemode.draw()
         car.draw()
-        obs.draw()
+        obstacle.draw()
         finish.draw()
         gamemode.draw_scores()
         car.draw_speed()
